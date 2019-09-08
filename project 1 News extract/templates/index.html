@@ -1,0 +1,170 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}首页{% endblock %}
+
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">新闻人物言论自动提取</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/">首页</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row-fluid">
+		<div class=col-md-2>
+            <div class="carousel slide" id="carousel-994126">
+				<ol class="carousel-indicators">
+					<li data-slide-to="0" data-target="#carousel-994126">
+					</li>
+					<li data-slide-to="1" data-target="#carousel-994126" class="active">
+					</li>
+					<li data-slide-to="2" data-target="#carousel-994126">
+					</li>
+				</ol>
+				<div class="carousel-inner">
+					<div class="item">
+						<img alt="" src="../static/picture/frog.jpeg" />
+						<div class="carousel-caption">
+
+						</div>
+					</div>
+					<div class="item active">
+						<img alt="" src="../static/picture/frog.jpeg"  />
+						<div class="carousel-caption">
+						</div>
+					</div>
+					<div class="item">
+						<img alt="" src="../static/picture/frog.jpeg" />
+						<div class="carousel-caption">
+						</div>
+					</div>
+				</div> <a data-slide="prev" href="#carousel-994126" class="left carousel-control">‹</a> <a data-slide="next" href="#carousel-994126" class="right carousel-control">›</a>
+			</div>
+		</div>
+		<div class=col-md-8>
+            <table class="table table-hover table-bordered">
+                <tr>
+                    <th>ID</th>
+                    <th>标题</th>
+                    <th>作者</th>
+                    <th>来源</th>
+                    <th>url</th>
+                    <th>操作</th>
+                </tr>
+                    {% for i in u %}
+                        <tr>
+                            <td >{{ i[0] }}</td>
+                            <td>{{ i[5] }}</td>
+                            <td>{{ i[1] }}</td>
+                            <td>{{ i[2] }}</td>
+                            <td>{{ i[6] }}</td>
+                            <td>
+                                <input class="btn btn-success btn-small" type="button" value="选择" id={{ i[0] }} name={{ i[0] }} onclick="database_news_extract(this.id);">
+                            </td>
+                        </tr>
+                    {% endfor %}
+    </table>
+
+            <h5 style="font-weight: bold">请输入新闻内容:</h5>
+            <form onsubmit="return false" method="post"  id="formAddtr">
+                <textarea style="vertical-align:middle "  name="news" id="news_textarea"  cols="130" rows="5" wrap="hard"></textarea>
+                <input type="submit" class="btn btn-success" value="提取新闻言论" onclick="textarea_news_extract()">
+            </form>
+            <br>
+
+            <table class="table table-hover table-bordered" id="opinion">
+                <tr>
+                    <th style="text-align:center;">人物</th>
+                    <th style="text-align:center;">观点</th>
+                </tr>
+                    {% for i in extract_dic %}
+                        <tr>
+                            <td style="text-align:center;", width="80">{{i}}</td>
+                            <td style="text-align:center;">{{extract_dic[i]}}</td>
+                        </tr>
+                    {% endfor %}
+
+            </table>
+            <script>
+                function textarea_news_extract(){
+                    var new_text=$('textarea').val()
+                    var data= {
+                        data: JSON.stringify({
+                            'news':new_text
+                        })}
+                    $.ajax({
+                    url: "textarea_news_opinion",
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+
+                    error:function (data) {
+                        alert('请求失败');
+                    },
+
+                    success: function (data) {
+                        $('#opinion tr:gt(0)').remove()
+                        for(var i = 0;i<data.length;i++){
+                            str1 = "<tr>" +
+                            "<td style=\"text-align:center;\">"+data[i].figure + "</td>" +
+                            "<td style=\"text-align:center;\">"+data[i].opinion + "</td>" +
+                            "</tr>";
+                            $("#opinion").append(str1);
+                            }
+                        }
+                    })
+                }
+
+                function database_news_extract(id){
+                        var data= {
+                            data: JSON.stringify({
+                                'id':id
+                            })}
+                        $.ajax({
+                        url: "database_news_opinion",
+                        type: "POST",
+                        dataType: "json",
+                        data: data,
+
+                        error:function (data) {
+                        alert('请求失败');
+                        },
+
+                        success: function (data) {
+                        $('#opinion tr:gt(0)').remove()
+                        document.getElementById("news_textarea").value = data[0].content;
+                        for(var i = 1;i<data.length;i++){
+                            str1 = "<tr>" +
+                            "<td style=\"text-align:center;\">"+data[i].figure + "</td>" +
+                            "<td style=\"text-align:center;\">"+data[i].opinion + "</td>" +
+                            "</tr>";
+                            $("#opinion").append(str1);
+                            }
+                        }
+                    })
+                }
+            </script>
+
+		</div>
+		<div class="col-md-2">
+		</div>
+	</div>
+
+
+</div>
+{% endblock %}
